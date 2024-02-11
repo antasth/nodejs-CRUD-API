@@ -57,6 +57,37 @@ export const requestHandler = (
       }
       break;
 
+    case 'PUT':
+      if (req.url?.startsWith(API_ENDPOINT) && req.url !== API_ENDPOINT) {
+        const userId = getUserIdFromUrl(req.url);
+        const targetUserIndex = users.findIndex((user) => user.id === userId);
+        console.log(targetUserIndex);
+
+        if (!userId) {
+          res.writeHead(400, { 'Content-type': 'text/plain' });
+          res.end('Provided user Id is invalid');
+          break;
+        }
+        req.on('data', (chunk) => {
+          const record = JSON.parse(chunk.toString());
+
+          if (targetUserIndex !== -1) {
+            users[targetUserIndex] = { ...users[targetUserIndex], ...record };
+          } else {
+            res.writeHead(404, { 'Content-type': 'text/plain' });
+            res.end('User with provided id is not found');
+          }
+        });
+
+        req.on('end', () => {
+          if (targetUserIndex !== -1) {
+            res.writeHead(200, { 'Content-type': 'application/json' });
+            res.end(JSON.stringify(users[targetUserIndex]));
+          }
+        });
+      }
+      break;
+
     default:
       break;
   }
