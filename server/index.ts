@@ -2,6 +2,7 @@ import http from 'http';
 import { v4 as uuid } from 'uuid';
 import { IUser } from './types';
 import { API_ENDPOINT, PORT, requiredFields } from './constants';
+import { getUserIdFromUrl } from './utils';
 
 export const users: IUser[] = [];
 
@@ -13,9 +14,7 @@ const server = http.createServer((req, res) => {
     }
 
     if (req.url?.startsWith(API_ENDPOINT) && req.url !== API_ENDPOINT) {
-      const regex = /\/([^/]+)$/;
-      const match = req.url.match(regex);
-      const userId = match ? match[1] : null;
+      const userId = getUserIdFromUrl(req.url);
       if (userId) {
         const user = users.filter((user) => user.id === userId);
         if (user.length) {
