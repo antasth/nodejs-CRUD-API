@@ -1,6 +1,6 @@
 import http from 'http';
 import { IUser } from './types';
-import { PORT } from './constants';
+import 'dotenv/config';
 import { requestHandler } from './handler';
 
 export const users: IUser[] = [];
@@ -14,6 +14,6 @@ const server = http.createServer((req, res) => {
   }
 });
 
-server.listen(PORT, () => {
-  console.log(`Server listening on port ${PORT}`);
+server.listen(process.env.PORT, () => {
+  console.log(`Server listening on port ${process.env.PORT}`);
 });
