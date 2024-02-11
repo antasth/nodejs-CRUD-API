@@ -88,6 +88,28 @@ export const requestHandler = (
       }
       break;
 
+    case 'DELETE':
+      if (req.url?.startsWith(API_ENDPOINT) && req.url !== API_ENDPOINT) {
+        const userId = getUserIdFromUrl(req.url);
+        const targetUserIndex = users.findIndex((user) => user.id === userId);
+
+        if (isProvidedUserIdValid(userId)) {
+          if (targetUserIndex !== -1) {
+            users.splice(targetUserIndex, 1);
+
+            res.writeHead(204, { 'Content-type': 'text/plain' });
+            res.end('Record was found and deleted');
+          } else {
+            res.writeHead(404, { 'Content-type': 'text/plain' });
+            res.end('User with provided id is not found');
+          }
+        } else {
+          res.writeHead(400, { 'Content-type': 'text/plain' });
+          res.end('Provided user Id is invalid');
+        }
+      }
+      break;
+
     default:
       break;
   }
