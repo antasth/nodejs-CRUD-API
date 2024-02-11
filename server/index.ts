@@ -1,11 +1,9 @@
 import http from 'http';
+import { v4 as uuid } from 'uuid';
 import { IUser } from './types';
-const { v4: uuidv4 } = require('uuid');
+import { API_ENDPOINT, PORT, requiredFields } from './constants';
 
-const PORT = 3000;
-const API_ENDPOINT = '/api/users';
-const requiredFields = ['age', 'name', 'hobbies']
-const users: IUser[] = []
+export const users: IUser[] = [];
 
 const server = http.createServer((req, res) => {
   if (req.method === 'GET') {
@@ -36,11 +34,11 @@ const server = http.createServer((req, res) => {
 
   if (req.method === 'POST') {
     if (req.url === API_ENDPOINT) {
-      const userId = uuidv4();
+      const userId = uuid();
 
       req.on('data', (chunk) => {
         const record = JSON.parse(chunk.toString());
-        if(requiredFields.filter((field) => !(field in record)).length) {
+        if (requiredFields.filter((field) => !(field in record)).length) {
           res.writeHead(400, { 'Content-type': 'text/plain' });
           res.end('Body does not contain required fields');
         } else {
@@ -51,7 +49,7 @@ const server = http.createServer((req, res) => {
 
       req.on('end', () => {
         const user = users.filter((user) => user.id === userId);
-        if(user.length) {
+        if (user.length) {
           res.writeHead(201, { 'Content-type': 'application/json' });
           res.end(JSON.stringify(user));
         }
