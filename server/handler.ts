@@ -8,13 +8,20 @@ export const requestHandler = (
   req: http.IncomingMessage,
   res: http.ServerResponse,
 ): void => {
+  if (!req.url?.startsWith(API_ENDPOINT)) {
+    res.writeHead(404, { 'Content-type': 'text/plain' });
+    res.end('Error: Request to non-existing endpoint');
+  }
+
   switch (req.method) {
     case 'GET':
       if (req.url === API_ENDPOINT) {
         res.writeHead(200, { 'Content-type': 'application/json' });
         res.end(JSON.stringify(users));
-      }
-      if (req.url?.startsWith(API_ENDPOINT) && req.url !== API_ENDPOINT) {
+      } else if (
+        req.url?.startsWith(API_ENDPOINT) &&
+        req.url !== API_ENDPOINT
+      ) {
         const userId = getUserIdFromUrl(req.url);
         if (isProvidedUserIdValid(userId)) {
           const user = users.filter((user) => user.id === userId);
@@ -29,6 +36,9 @@ export const requestHandler = (
           res.writeHead(400, { 'Content-type': 'text/plain' });
           res.end('Provided user Id is invalid');
         }
+      } else {
+        res.writeHead(400, { 'Content-type': 'text/plain' });
+        res.end('Incorrect request');
       }
       break;
 
@@ -54,6 +64,9 @@ export const requestHandler = (
             res.end(JSON.stringify(user));
           }
         });
+      } else {
+        res.writeHead(400, { 'Content-type': 'text/plain' });
+        res.end('Incorrect request');
       }
       break;
 
@@ -85,6 +98,9 @@ export const requestHandler = (
           res.writeHead(400, { 'Content-type': 'text/plain' });
           res.end('Provided user Id is invalid');
         }
+      } else {
+        res.writeHead(400, { 'Content-type': 'text/plain' });
+        res.end('Incorrect request');
       }
       break;
 
@@ -107,10 +123,15 @@ export const requestHandler = (
           res.writeHead(400, { 'Content-type': 'text/plain' });
           res.end('Provided user Id is invalid');
         }
+      } else {
+        res.writeHead(400, { 'Content-type': 'text/plain' });
+        res.end('Incorrect request');
       }
       break;
 
     default:
+      console.log('default');
+
       break;
   }
 };
