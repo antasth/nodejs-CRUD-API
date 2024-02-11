@@ -2,7 +2,7 @@ import http from 'http';
 import { v4 as uuid } from 'uuid';
 import { users } from '.';
 import { API_ENDPOINT, requiredFields } from './constants';
-import { getUserIdFromUrl } from './utils';
+import { getUserIdFromUrl, isProvidedUserIdValid } from './utils';
 
 export const requestHandler = (
   req: http.IncomingMessage,
@@ -16,7 +16,7 @@ export const requestHandler = (
       }
       if (req.url?.startsWith(API_ENDPOINT) && req.url !== API_ENDPOINT) {
         const userId = getUserIdFromUrl(req.url);
-        if (userId) {
+        if (isProvidedUserIdValid(userId)) {
           const user = users.filter((user) => user.id === userId);
           if (user.length) {
             res.writeHead(200, { 'Content-type': 'application/json' });
@@ -63,28 +63,28 @@ export const requestHandler = (
         const targetUserIndex = users.findIndex((user) => user.id === userId);
         console.log(targetUserIndex);
 
-        if (!userId) {
+        if (isProvidedUserIdValid(userId)) {
+          req.on('data', (chunk) => {
+            const record = JSON.parse(chunk.toString());
+
+            if (targetUserIndex !== -1) {
+              users[targetUserIndex] = { ...users[targetUserIndex], ...record };
+            } else {
+              res.writeHead(404, { 'Content-type': 'text/plain' });
+              res.end('User with provided id is not found');
+            }
+          });
+
+          req.on('end', () => {
+            if (targetUserIndex !== -1) {
+              res.writeHead(200, { 'Content-type': 'application/json' });
+              res.end(JSON.stringify(users[targetUserIndex]));
+            }
+          });
+        } else {
           res.writeHead(400, { 'Content-type': 'text/plain' });
           res.end('Provided user Id is invalid');
-          break;
         }
-        req.on('data', (chunk) => {
-          const record = JSON.parse(chunk.toString());
-
-          if (targetUserIndex !== -1) {
-            users[targetUserIndex] = { ...users[targetUserIndex], ...record };
-          } else {
-            res.writeHead(404, { 'Content-type': 'text/plain' });
-            res.end('User with provided id is not found');
-          }
-        });
-
-        req.on('end', () => {
-          if (targetUserIndex !== -1) {
-            res.writeHead(200, { 'Content-type': 'application/json' });
-            res.end(JSON.stringify(users[targetUserIndex]));
-          }
-        });
       }
       break;
 
