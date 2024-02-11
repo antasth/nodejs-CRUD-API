@@ -1,25 +1,37 @@
-import { writeHello } from './modules/test';
+import http from 'http';
+import { users } from './users';
 
-console.log(123);
-writeHello();
-export const resolveValue = async (value: unknown) => {
-  return value;
-};
+const PORT = 3000;
+const API_ENDPOINT = '/api/users';
 
-export const throwError = (msg?: string) => {
-  throw new Error(msg ?? 'Oops!');
-};
+const server = http.createServer((req, res) => {
+  if (req.method === 'GET') {
+    if (req.url === API_ENDPOINT) {
+      res.writeHead(200, { 'Content-type': 'application/json' });
+      res.end(JSON.stringify(users));
+    }
 
-export const throwCustomError = () => {
-  throw new MyAwesomeError();
-};
-
-export const rejectCustomError = async () => {
-  throw new MyAwesomeError();
-};
-
-export class MyAwesomeError extends Error {
-  constructor() {
-    super('This is my awesome custom error!');
+    if (req.url?.startsWith(API_ENDPOINT)) {
+      const regex = /\/(\d+)$/;
+      const match = req.url.match(regex);
+      const userId = match ? match[1] : null;
+      if (userId) {
+        const user = users.filter((user) => user.id === +userId);
+        if (user.length) {
+          res.writeHead(200, { 'Content-type': 'application/json' });
+          res.end(JSON.stringify(user));
+        } else {
+          res.writeHead(404, { 'Content-type': 'text/plain' });
+          res.end('User with provided id is not found');
+        }
+      } else {
+        res.writeHead(400, { 'Content-type': 'text/plain' });
+        res.end('Provided user Id is invalid');
+      }
+    }
   }
-}
+});
+
+server.listen(PORT, () => {
+  console.log(`Server listening on port ${PORT}`);
+});
