@@ -1,8 +1,11 @@
 import http from 'http';
-import { users } from './users';
+import { IUser } from './types';
+const { v4: uuidv4 } = require('uuid');
 
 const PORT = 3000;
 const API_ENDPOINT = '/api/users';
+const requiredFields = ['age', 'name', 'hobbies']
+const users: IUser[] = []
 
 const server = http.createServer((req, res) => {
   if (req.method === 'GET') {
@@ -11,12 +14,12 @@ const server = http.createServer((req, res) => {
       res.end(JSON.stringify(users));
     }
 
-    if (req.url?.startsWith(API_ENDPOINT)) {
-      const regex = /\/(\d+)$/;
+    if (req.url?.startsWith(API_ENDPOINT) && req.url !== API_ENDPOINT) {
+      const regex = /\/([^/]+)$/;
       const match = req.url.match(regex);
       const userId = match ? match[1] : null;
       if (userId) {
-        const user = users.filter((user) => user.id === +userId);
+        const user = users.filter((user) => user.id === userId);
         if (user.length) {
           res.writeHead(200, { 'Content-type': 'application/json' });
           res.end(JSON.stringify(user));
@@ -28,6 +31,31 @@ const server = http.createServer((req, res) => {
         res.writeHead(400, { 'Content-type': 'text/plain' });
         res.end('Provided user Id is invalid');
       }
+    }
+  }
+
+  if (req.method === 'POST') {
+    if (req.url === API_ENDPOINT) {
+      const userId = uuidv4();
+
+      req.on('data', (chunk) => {
+        const record = JSON.parse(chunk.toString());
+        if(requiredFields.filter((field) => !(field in record)).length) {
+          res.writeHead(400, { 'Content-type': 'text/plain' });
+          res.end('Body does not contain required fields');
+        } else {
+          record.id = userId;
+          users.push(record);
+        }
+      });
+
+      req.on('end', () => {
+        const user = users.filter((user) => user.id === userId);
+        if(user.length) {
+          res.writeHead(201, { 'Content-type': 'application/json' });
+          res.end(JSON.stringify(user));
+        }
+      });
     }
   }
 });
