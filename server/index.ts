@@ -6,6 +6,8 @@ import { requestHandler } from './handler';
 export const users: IUser[] = [];
 
 const server = http.createServer((req, res) => {
+  console.log(req);
+
   try {
     requestHandler(req, res);
   } catch (error) {

@@ -150,8 +150,6 @@ export const requestHandler = (
       break;
 
     default:
-      console.log('default');
-
       break;
   }
 };

@@ -4,10 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon --exec ts-node server/index.ts",
+    "start:dev": "nodemon --exec ts-node server/index.ts",
+    "start:prod": "tsc && ts-node dist/index.js",
     "format": "prettier --write \"server/**/*.ts\"",
     "lint": "eslint \"server/**/*.ts\" --fix",
-    "test": "jest --silent"
+    "test": "jest --silent --detectOpenHandles"
   },
   "keywords": [],
   "author": "antasth",
